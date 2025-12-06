@@ -1,0 +1,119 @@
+---
+title: Authentication
+description: Learn how to authenticate with AsiaQuant APIs and manage access tokens
+---
+
+## Authentication Methods
+
+AsiaQuant supports multiple authentication methods to ensure secure access to our AI-powered solutions. Choose the method that best fits your integration needs and security requirements.
+
+<Tabs>
+  <Tab title="API Keys" icon="key">
+    Use API keys for server-to-server authentication in production environments.
+    
+    <Steps>
+      <Step title="Generate Key" icon="plus">
+        Create an API key in your AsiaQuant dashboard.
+      </Step>
+      <Step title="Store Securely" icon="lock">
+        Store the key securely in your environment variables.
+      </Step>
+      <Step title="Include in Requests" icon="send">
+        Include the key in the Authorization header of all API requests.
+      </Step>
+    </Steps>
+    
+    ```javascript
+const headers = {
+  'Authorization': `Bearer ${process.env.ASIAQUANT_API_KEY}`,
+  'Content-Type': 'application/json'
+};
+
+fetch('https://api.asiaquant.com/videos', { headers })
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+  </Tab>
+  <Tab title="OAuth 2.0" icon="shield">
+    Implement OAuth 2.0 for user-based authentication in client applications.
+    
+    <Steps>
+      <Step title="Register Application" icon="settings">
+        Register your application in the AsiaQuant developer portal.
+      </Step>
+      <Step title="Obtain Tokens" icon="refresh-cw">
+        Implement the OAuth 2.0 flow to obtain access and refresh tokens.
+      </Step>
+      <Step title="Refresh Tokens" icon="rotate-cw">
+        Automatically refresh expired access tokens using refresh tokens.
+      </Step>
+    </Steps>
+    
+    ```python
+import requests
+
+token_url = 'https://api.asiaquant.com/oauth/token'
+data = {
+  'grant_type': 'client_credentials',
+  'client_id': 'your-client-id',
+  'client_secret': 'your-client-secret'
+}
+
+response = requests.post(token_url, data=data)
+tokens = response.json()
+access_token = tokens['access_token']
+```
+  </Tab>
+</Tabs>
+
+<Callout kind="info">API keys should never be exposed in client-side code. Use OAuth 2.0 for web and mobile applications.</Callout>
+
+## Token Management
+
+Proper token management is crucial for maintaining secure and uninterrupted access to AsiaQuant services. Implement robust token handling in your applications.
+
+<Steps>
+  <Step title="Store Tokens Securely" icon="database">
+    Store access tokens in secure, encrypted storage. Never store them in plain text or local storage for web applications.
+  </Step>
+  <Step title="Handle Expiration" icon="clock">
+    Monitor token expiration times and implement automatic refresh mechanisms.
+  </Step>
+  <Step title="Implement Retry Logic" icon="refresh-cw">
+    Add retry logic for requests that fail due to expired tokens.
+  </Step>
+  <Step title="Monitor Usage" icon="bar-chart">
+    Track API usage and implement rate limiting to prevent token abuse.
+  </Step>
+</Steps>
+
+<Expandable title="Troubleshooting Authentication Issues" default-open="false">
+  <Expandable title="Invalid API Key" default-open="false">
+    Verify that your API key is correct and hasn't been revoked. Check for extra spaces or encoding issues.
+  </Expandable>
+  <Expandable title="Token Expired" default-open="false">
+    Implement automatic token refresh or obtain a new token from the authentication endpoint.
+  </Expandable>
+  <Expandable title="Rate Limiting" default-open="false">
+    Reduce request frequency or upgrade your plan to increase rate limits.
+  </Expandable>
+</ExpandableGroup>
+
+## Security Best Practices
+
+Follow these security best practices to protect your authentication credentials and maintain secure access to AsiaQuant services.
+
+<Columns cols={2}>
+  <Card title="Environment Variables" icon="settings" href="#env-vars">
+    Store sensitive credentials in environment variables, not in code.
+  </Card>
+  <Card title="HTTPS Only" icon="lock" href="#https-only">
+    Always use HTTPS for all API communications to encrypt data in transit.
+  </Card>
+  <Card title="Regular Rotation" icon="refresh-cw" href="#rotation">
+    Rotate API keys and tokens regularly to minimize security risks.
+  </Card>
+  <Card title="Access Monitoring" icon="eye" href="#monitoring">
+    Monitor authentication attempts and implement alerts for suspicious activity.
+  </Card>
+</Columns>

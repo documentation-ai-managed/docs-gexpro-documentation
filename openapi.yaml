@@ -1,0 +1,236 @@
+openapi: '3.0.0'
+info:
+  version: 1.0.0
+  title: AsiaQuant API
+  license:
+    name: MIT
+servers:
+  - url: https://api.asiaquant.com/v1
+paths:
+  /videos:
+    get:
+      summary: Retrieve a list of all video streams available in the system. This endpoint provides comprehensive information about active video feeds, including their status, resolution, and AI analytics capabilities. Use this to monitor and manage your network video infrastructure effectively.
+      operationId: listVideos
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: A paged array of video streams
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Videos'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a new video stream configuration in the AsiaQuant system. This endpoint allows you to set up new video feeds with specific parameters for resolution, frame rate, and AI processing options. Ensure you have the necessary permissions and hardware configured before creating new streams.
+      operationId: createVideo
+      responses:
+        201:
+          description: Video stream created successfully
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /videos/{videoId}:
+    get:
+      summary: Retrieve detailed information about a specific video stream. This endpoint provides comprehensive data including current status, configuration settings, and recent analytics results. Use this to monitor individual video feeds and troubleshoot any issues with specific streams.
+      operationId: getVideoById
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          description: The unique identifier of the video stream to retrieve
+          schema:
+            type: string
+      responses:
+        200:
+          description: Detailed video stream information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Videos'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /devices:
+    get:
+      summary: List all access control and audio devices connected to the system. This endpoint provides an overview of your hardware infrastructure, including device status, location, and configuration. Use this to manage and monitor your physical security and audio equipment across multiple sites.
+      operationId: listDevices
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: A paged array of devices
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Devices'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Register a new device in the AsiaQuant system. This endpoint allows you to add access control readers, biometric scanners, or audio devices to your network. Provide the device type, location, and configuration details to ensure proper integration with your security and communication systems.
+      operationId: createDevice
+      responses:
+        201:
+          description: Device registered successfully
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /webhooks:
+    get:
+      summary: Retrieve the list of configured webhooks for event notifications. This endpoint shows all active webhook endpoints, their event subscriptions, and delivery status. Use this to manage your real-time notification system and ensure you're receiving alerts for critical security and system events.
+      operationId: listWebhooks
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: A paged array of webhooks
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Webhooks'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a new webhook configuration for receiving real-time notifications. This endpoint allows you to set up endpoints that will receive instant alerts about access events, video analytics, and system status changes. Specify the URL, authentication method, and events you want to monitor.
+      operationId: createWebhook
+      responses:
+        201:
+          description: Webhook created successfully
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Video:
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        status:
+          type: string
+        resolution:
+          type: string
+        frame_rate:
+          type: integer
+        ai_enabled:
+          type: boolean
+    Videos:
+      type: array
+      items:
+        $ref: '#/components/schemas/Video'
+    Device:
+      required:
+        - id
+        - name
+        - type
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        type:
+          type: string
+          enum: [access_control, audio, video]
+        status:
+          type: string
+        location:
+          type: string
+    Devices:
+      type: array
+      items:
+        $ref: '#/components/schemas/Device'
+    Webhook:
+      required:
+        - id
+        - url
+        - events
+      properties:
+        id:
+          type: integer
+          format: int64
+        url:
+          type: string
+        events:
+          type: array
+          items:
+            type: string
+        active:
+          type: boolean
+    Webhooks:
+      type: array
+      items:
+        $ref: '#/components/schemas/Webhook'
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string

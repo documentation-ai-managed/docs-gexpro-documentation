@@ -1,0 +1,161 @@
+---
+title: Webhooks
+description: Set up webhooks to receive real-time notifications from AsiaQuant systems
+---
+
+## Webhook Overview
+
+Webhooks enable real-time communication between AsiaQuant systems and your applications. Receive instant notifications about events such as access attempts, video analytics alerts, and system status changes.
+
+<Columns cols={3}>
+  <Card title="Event-Driven" icon="zap" href="#event-driven">
+    Get notified instantly when important events occur in your systems.
+  </Card>
+  <Card title="Real-Time" icon="clock" href="#real-time">
+    Receive data as soon as events happen, enabling immediate responses.
+  </Card>
+  <Card title="Reliable" icon="check-circle" href="#reliable">
+    Built-in retry mechanisms ensure webhook delivery even during network issues.
+  </Card>
+</Columns>
+
+## Setting Up Webhooks
+
+Configure webhooks to start receiving notifications from your AsiaQuant deployment.
+
+<Steps>
+  <Step title="Create Endpoint" icon="server">
+    Set up an HTTPS endpoint in your application to receive webhook payloads.
+  </Step>
+  <Step title="Register Webhook" icon="plus">
+    Register your endpoint URL in the AsiaQuant dashboard or via API.
+  </Step>
+  <Step title="Configure Events" icon="settings">
+    Select which events you want to receive notifications for.
+  </Step>
+  <Step title="Test Integration" icon="check">
+    Send test events to verify your endpoint is working correctly.
+  </Step>
+</Steps>
+
+## Available Events
+
+Subscribe to various events based on your monitoring and security needs.
+
+<Tabs>
+  <Tab title="Access Events" icon="lock">
+    | Event Type | Description | Payload Example |
+    |------------|-------------|-----------------|
+    | access_granted | Successful access attempt | `{"user_id": "123", "timestamp": "2024-01-01T10:00:00Z"}` |
+    | access_denied | Failed access attempt | `{"user_id": "456", "reason": "invalid_credentials"}` |
+    | access_timeout | Access attempt timed out | `{"device_id": "dev001", "timeout_seconds": 30}` |
+  </Tab>
+  <Tab title="Video Events" icon="video">
+    | Event Type | Description | Payload Example |
+    |------------|-------------|-----------------|
+    | motion_detected | Motion detected in video feed | `{"camera_id": "cam001", "confidence": 0.95}` |
+    | object_recognized | AI recognized an object | `{"camera_id": "cam002", "object_type": "person", "bounding_box": {"x": 100, "y": 200}}` |
+    | anomaly_detected | Unusual activity detected | `{"camera_id": "cam003", "anomaly_type": "loitering"}` |
+  </Tab>
+  <Tab title="System Events" icon="server">
+    | Event Type | Description | Payload Example |
+    |------------|-------------|-----------------|
+    | system_online | System came back online | `{"device_id": "dev001", "uptime": "2h 30m"}` |
+    | system_offline | System went offline | `{"device_id": "dev002", "reason": "network_error"}` |
+    | firmware_updated | Firmware was updated | `{"device_id": "dev003", "version": "2.1.0"}` |
+  </Tab>
+</Tabs>
+
+<Callout kind="info">Webhook payloads are sent as JSON with consistent structure across all event types.</Callout>
+
+## Security and Validation
+
+Ensure the security and integrity of your webhook integrations.
+
+<Expandable title="Webhook Security Best Practices" default-open="false">
+  <Expandable title="Verify Signatures" default-open="false">
+    Validate webhook signatures using the shared secret to ensure authenticity.
+  </Expandable>
+  <Expandable title="Use HTTPS" default-open="false">
+    Always use HTTPS endpoints to encrypt webhook payloads in transit.
+  </Expandable>
+  <Expandable title="Implement Timeouts" default-open="false">
+    Set reasonable timeouts for webhook processing to prevent hanging requests.
+  </Expandable>
+</ExpandableGroup>
+
+<CodeGroup tabs="Node.js,Python">
+  ```javascript
+const crypto = require('crypto');
+
+function verifySignature(payload, signature, secret) {
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+  return crypto.timingSafeEqual(
+    Buffer.from(signature, 'hex'),
+    Buffer.from(expectedSignature, 'hex')
+  );
+}
+
+// Usage in webhook handler
+app.post('/webhooks', (req, res) => {
+  const isValid = verifySignature(
+    JSON.stringify(req.body),
+    req.headers['x-asiaquant-signature'],
+    process.env.WEBHOOK_SECRET
+  );
+  if (!isValid) {
+    return res.status(401).send('Invalid signature');
+  }
+  // Process webhook...
+});
+  ```
+  ```python
+import hmac
+import hashlib
+
+def verify_signature(payload, signature, secret):
+    expected = hmac.new(
+        secret.encode(),
+        payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(signature, expected)
+
+# Usage in webhook handler
+@app.route('/webhooks', methods=['POST'])
+def handle_webhook():
+    payload = request.get_json()
+    signature = request.headers.get('X-AsiaQuant-Signature')
+    secret = os.environ['WEBHOOK_SECRET']
+    
+    if not verify_signature(json.dumps(payload), signature, secret):
+        return 'Invalid signature', 401
+    
+    # Process webhook...
+    return 'OK', 200
+  ```
+</CodeGroup>
+
+## Error Handling and Retries
+
+Implement robust error handling for reliable webhook delivery.
+
+<Steps>
+  <Step title="Handle Failures" icon="alert-triangle">
+    Implement proper error handling for webhook delivery failures.
+  </Step>
+  <Step title="Log Events" icon="file-text">
+    Log all webhook attempts and responses for debugging.
+  </Step>
+  <Step title="Implement Retries" icon="refresh-cw">
+    Set up retry logic with exponential backoff for failed deliveries.
+  </Step>
+  <Step title="Monitor Health" icon="heart">
+    Monitor webhook endpoint health and alert on failures.
+  </Step>
+</Steps>
+
+<Callout kind="tip">Return a 2xx status code within 10 seconds to acknowledge successful webhook processing.</Callout>
